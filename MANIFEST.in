@@ -1,0 +1,2 @@
+include README.textile
+recursive-include templates *.html *.js

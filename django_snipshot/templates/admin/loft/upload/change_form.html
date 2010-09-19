@@ -1,0 +1,83 @@
+{% extends "admin/change_form.html" %}
+{% block extrahead %}{{ block.super }}
+{% url admin:jsi18n as jsi18nurl %}
+<script type="text/javascript" src="{{ jsi18nurl|default:"../../../jsi18n/" }}"></script>
+{{ media }}
+<script type="text/javascript" charset="utf-8">
+
+    function getParameterByName( name ) {
+        name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+        var regexS = "[\\?&]"+name+"=([^&#]*)";
+        var regex = new RegExp( regexS );
+        var results = regex.exec( window.location.href );
+        if( results == null )
+            return "";
+        else
+            return decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    django.jQuery(function(){
+        
+        // If we're returning fron Snipshot with a file in the URL, insert it
+        // and reload the form. We need this because populating from the URL
+        // doesn't work when editing an object.
+        
+        snipshot_file = getParameterByName('snipshot_file')
+        change        = getParameterByName('_popup')
+        django.jQuery(".snipshot_file").hide()
+                                       .find("input[name='snipshot_file']")
+                                       .val(snipshot_file);
+        django.jQuery('#id_image').after('<a href="#" id="photo-edit">Edit this image</a>');
+        django.jQuery('#photo-edit').hide();
+
+        // Automatically save and reload the page to generate the thumbnail. If
+        // We are in a popup, just hit the save button as we've added a hidden 
+        // input in the form with name '_continue'.
+
+        if (snipshot_file) {
+            if (change) {
+                django.jQuery("input[name='_save']").click();
+            } else {
+                django.jQuery("input[name='_continue']").click();
+            };
+        };
+
+        var ext = '';
+        //check if the image field contains an image path or PDF
+        django.jQuery('#id_image').change(function(){
+            var image_ext = ['.jpg', '.jpeg', 'JPG', '.gif', '.png', '.pdf'];
+            var found = false;
+            for (var i=0; i<image_ext.length; i++) {
+                if (django.jQuery(this).val().lastIndexOf(image_ext[i]) > 0) {
+                    found = true;
+                    ext = image_ext[i].replace('.','');
+                    break;
+                }
+            }
+            if (found == true)
+                django.jQuery('#photo-edit').show();
+            else
+                django.jQuery('#photo-edit').hide();
+        });
+        //edit form to post to snipshot and submit
+        django.jQuery('a#photo-edit').click(function(){
+            django.jQuery(this).after('<input type="hidden" name="snipshot_input" value="image"/>');
+            django.jQuery(this).after('<input type="hidden" name="snipshot_callback" value="'+document.location.href+'"/>');
+            django.jQuery(this).after('<input type="hidden" name="snipshot_callback_agent" value="user"/>');
+            django.jQuery(this).after('<input type="hidden" name="snipshot_output" value="snipshot_file"/>');
+            django.jQuery(this).parents('form').attr('action', 'http://services.snipshot.com/');
+            django.jQuery(this).parents('form').submit();
+            return false;
+        });
+    });
+</script>
+{% endblock %}
+
+{% block after_related_objects %}
+    {# If we're adding an image via a popup window, add a hidden input to the #}
+    {# form This is used in ImageAdmin.response_add() to automatically reload #}
+    {# The popup after returning with an edited image from SnipShot #}
+    {% if not change %}
+        {% if is_popup %}<input type="hidden" name="_continue" value="1" />{% endif %}
+    {% endif %}
+{% endblock %}
