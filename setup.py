@@ -1,5 +1,5 @@
 from distutils.core import setup
-from setuptools import find_packages
+from setuptools import setup, find_packages
 
 setup(
     name = "django_snipshot",
@@ -11,6 +11,7 @@ setup(
     url = "http://github.com/timfletcher/django_snipshot",
     packages=find_packages(),  # Includes all folders containing __init__.py
     include_package_data=True, # Includes templates from MANIFEST.in
+    zip_safe=False,
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
