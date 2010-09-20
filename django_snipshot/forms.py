@@ -9,6 +9,9 @@ class ImageAdminForm(forms.ModelForm):
     class Meta:
         model = Image
 
+    class Media:
+        js = ("my_code.js",)
+
     def __init__(self, *args, **kwargs):
         super(ImageAdminForm, self).__init__(*args, **kwargs)
         self.fields['image'].widget = AdminImageWidget()
